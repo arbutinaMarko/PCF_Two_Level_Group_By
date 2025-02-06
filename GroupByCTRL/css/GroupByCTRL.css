@@ -1,0 +1,121 @@
+.container {
+  display: flex; /* Use flexbox for the layout */
+  height: auto; /* Full height of the viewport */
+  width: 100%;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  justify-content: flex-start; /* Align items at the start */
+  width: 200px; /* Fixed width for the left pane */
+  padding: 10px; /* Padding */
+  background-color: #f3f2f1; /* Light background */
+}
+
+.grouped-list-container {
+  flex-grow: 1; /* Take up remaining space */
+  padding: 5px; /* Add some padding */
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 100%; /* Prevent exceeding parent height */
+  width: 100%; /* Full width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.header-div {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: row;}
+
+.header-columns {
+  display: flex; /* Flexbox for horizontal layout */
+  width: 100%; /* Ensure full width */
+}
+
+.columnSpacer {
+  width: 152px;
+  flex: inherit;
+  font-weight: bold;
+  padding: 0px;
+  text-align: center;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-column:first-child{
+  padding-left: 10px;
+}
+
+.header-column {
+  text-align: start;
+  flex: 1;
+  font-weight: bold;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ms-GroupedList {
+  width: 100%; /* Ensure the grouped list takes full width */
+  margin: 20px 0; /* Adjust top and bottom margins */
+}
+
+.ms-List-page {
+  width: 100%; /* Ensure the list page takes the full width */
+  display: flex;
+  flex-direction: column; /* Stack the cells vertically */
+  padding: 0; /* Remove padding */
+}
+
+.ms-List-cell {
+  width: 100%; /* Each cell should take the full width */
+  justify-content: space-between; /* Space the cells evenly */
+  align-items: center; /* Align items vertically */
+}
+
+.ms-DetailsRow {
+  width: 100%; /* Ensure each details row takes the full width */
+}
+
+.ms-DetailsRow-fields {
+  display: flex; /* Use flexbox to arrange fields */
+  justify-content: space-between; /* Distribute space evenly */
+  width: 100%; /* Ensure it takes full width */
+  align-items: center;
+}
+
+.ms-DetailsRow-cell {
+  flex: 1; /* Allow each cell to grow equally */
+  text-align: left; /* Align text to the left */
+  padding: 8px; /* Add some padding for better spacing */
+  overflow: visible;
+  white-space: normal;
+}
+
+.dropdown {
+  margin-bottom: 5px; /* Space between dropdowns */
+  padding: 5px; /* Padding for dropdown */
+  font-size: 14px; /* Font size for dropdown */
+  width: -webkit-fill-available;
+}
+
+.action-button {
+  padding: 10px; /* Padding for button */
+  background-color: #0078d4; /* Fluent UI primary color */
+  color: white; /* Text color */
+  border: none; /* Remove default border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer on hover */
+  font-size: 14px; /* Font size for button */
+}
+
+.action-button:hover {
+  background-color: #005a9e; /* Darker shade on hover */
+}
