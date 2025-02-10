@@ -121,7 +121,7 @@ export function makeColumnAndItems(
   columns: IColumn[];
 } {
   
-  const columns: IColumn[] = dataset.columns.slice(3).map((column) => ({
+  const columns: IColumn[] = dataset.columns.filter((column) => column.name !== "ct_name").slice(3).map((column) => ({
     name: column.displayName,
     fieldName: column.name,
     minWidth: column.visualSizeFactor,
@@ -181,7 +181,16 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
   const [selectedItems, setSelectedItems] = useState<DynamicItem[]>([]);
   const [screen, setScreen] = useState<boolean>(false);
 
-  const selection = useConst(() => new Selection());
+  //const selection = useConst(() => new Selection());
+  const selection = useConst(
+    () =>
+      new Selection({
+        onSelectionChanged: () => {
+          setSelectedItems(selection.getSelection() as DynamicItem[]);
+        },
+      })
+  );
+  
 
   useEffect(() => {
     const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(dataset, level1 ?? "", level2 ?? "");
@@ -197,6 +206,12 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
     }
   }, [dataset, level1, level2, level3, groups]);
 
+  useEffect(() => { //Ne znam da li je potrebno, u principu i nije, al nek stoji za dalju upotrebu
+    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
+    dataset.setSelectedRecordIds(selectedRecordIds);
+  }, [selection, dataset]);
+  
+
   const openRecordForm = (item: DynamicItem) => {
     context.navigation.openForm({
       entityName: "ct_bw_procesitems", //Entity on which is called
@@ -205,6 +220,14 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
   };
 
   const onRenderCell = (nestingDepth?: number, item?: DynamicItem, itemIndex?: number, group?: IGroup): React.ReactNode => {
+    //console.log("Selected items: ", selectedItems);
+
+    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
+    dataset.setSelectedRecordIds(selectedRecordIds);
+    //console.log("IDs: ", selectedRecordIds);
+
+    //console.log("Dataset: ", dataset.getSelectedRecordIds());
+
     return item && typeof itemIndex === "number" && itemIndex > -1 ? (
       <div onDoubleClick={() => openRecordForm(item)}>
         <DetailsRow
