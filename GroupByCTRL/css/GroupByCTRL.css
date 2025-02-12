@@ -56,7 +56,7 @@
   padding: 8px;
   text-align: left;
   border-bottom: 2px solid #e0e0e0;
-  font-size: 12px;
+  font-size: 15px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -64,7 +64,6 @@
 
 .ms-GroupedList {
   width: 100%; /* Ensure the grouped list takes full width */
-  margin: 20px 0; /* Adjust top and bottom margins */
 }
 
 .ms-List-page {
@@ -118,4 +117,8 @@
 
 .action-button:hover {
   background-color: #005a9e; /* Darker shade on hover */
+}
+
+.ms-GroupHeader {
+  font-size: 12px;
 }

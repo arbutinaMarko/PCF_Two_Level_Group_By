@@ -1,5 +1,5 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { GroupedListComp, IGroupedList } from "./GroupedList";
+import { GBCheckBox, IGroupedList } from "./GroupedList";
 //import { GroupedListComp } from "./TestComp";
 import * as React from "react";
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
@@ -36,13 +36,16 @@ export class GroupByCTRL
    * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
    * @returns ReactElement root react element for the control
    */
-  public updateView(context: ComponentFramework.Context<IInputs>) : React.ReactElement 
-  {
+  public updateView(
+    context: ComponentFramework.Context<IInputs>
+  ): React.ReactElement {
+    const projectId = context.parameters.ct_projectid.raw ?? ""; 
     const props: IGroupedList = {
       dataset: context.parameters.dataset,
-      context: context
+      context: context,
+      projectID: projectId,
     };
-    return React.createElement(GroupedListComp, props);
+    return React.createElement(GBCheckBox, props);
     //return React.createElement(GroupedListComp);
   }
 
