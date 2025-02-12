@@ -1,11 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { GroupedList, IGroup } from "@fluentui/react/lib/GroupedList";
-import {
-  IColumn,
-  DetailsRow,
-  DetailsRowFields,
-} from "@fluentui/react/lib/DetailsList";
+import { IColumn, DetailsRow, DetailsRowFields } from "@fluentui/react/lib/DetailsList";
 import {
   Selection,
   SelectionMode,
@@ -18,7 +14,6 @@ export type Dataset = ComponentFramework.PropertyTypes.DataSet;
 export interface IGroupedList {
   dataset: Dataset;
   context: ComponentFramework.Context<IInputs>;
-  projectID: string;
 }
 
 interface GroupedRecord {
@@ -116,8 +111,6 @@ export function makeGroups(
   return { groups, items };
 }
 
-const selectedItems = new Set<DynamicItem>();
-
 export function makeColumnAndItems(
   dataset: Dataset,
   level1: string,
@@ -127,41 +120,13 @@ export function makeColumnAndItems(
   items: DynamicItem[];
   columns: IColumn[];
 } {
-  const makeList = (item: DynamicItem) => {
-    //Fix logic of selection here
-    if (selectedItems.has(item)) {
-      selectedItems.delete(item);
-    } else {
-      selectedItems.add(item);
-    }
-    console.log("Selected items:", Array.from(selectedItems));
-  };
-
-  const columns: IColumn[] = [
-    {
-      key: "select",
-      name: "",
-      fieldName: "isChecked",
-      minWidth: 30,
-      maxWidth: 30,
-      onRender: (item: DynamicItem, index?: number) => (
-        <input
-          type="checkbox"
-          checked={!!item.isChecked}
-          onChange={() => makeList(item)}
-        />
-      ),
-    },
-    ...dataset.columns
-      .filter((column) => column.name !== "ct_name")
-      .slice(3)
-      .map((column) => ({
-        name: column.displayName,
-        fieldName: column.name,
-        minWidth: column.visualSizeFactor,
-        key: column.name,
-      })),
-  ];
+  
+  const columns: IColumn[] = dataset.columns.filter((column) => column.name !== "ct_name").slice(3).map((column) => ({
+    name: column.displayName,
+    fieldName: column.name,
+    minWidth: column.visualSizeFactor,
+    key: column.name,
+}));
 
   const items: DynamicItem[] = [];
   const groupedRecords: Record<string, Record<string, DynamicItem[]>> = {};
@@ -206,12 +171,7 @@ export function makeColumnAndItems(
   return { items, columns };
 }
 
-export const GBCheckBox = ({
-  dataset,
-  context,
-}: IGroupedList & {
-  context: ComponentFramework.Context<IInputs>;
-}): JSX.Element => {
+export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: ComponentFramework.Context<IInputs> }): JSX.Element => {
   const [groups, setGroups] = useState<IGroup[]>([]);
   const [items, setItems] = useState<DynamicItem[]>([]);
   const [columns, setColumns] = useState<IColumn[]>([]);
@@ -221,6 +181,7 @@ export const GBCheckBox = ({
   const [selectedItems, setSelectedItems] = useState<DynamicItem[]>([]);
   const [screen, setScreen] = useState<boolean>(false);
 
+  //const selection = useConst(() => new Selection());
   const selection = useConst(
     () =>
       new Selection({
@@ -229,81 +190,46 @@ export const GBCheckBox = ({
         },
       })
   );
+  
 
   useEffect(() => {
-    const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(
-      dataset,
-      level1 ?? "",
-      level2 ?? ""
-    );
+    const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(dataset, level1 ?? "", level2 ?? "");
     setGroups(generatedGroups);
   }, [dataset, level1, level2, level3]);
 
   useEffect(() => {
     if (groups.length > 0) {
-      const { items: extractedItems, columns: extractedColumns } =
-        makeColumnAndItems(dataset, level1 ?? "", level2 ?? "", groups);
+      const { items: extractedItems, columns: extractedColumns } = makeColumnAndItems(dataset, level1 ?? "", level2 ?? "", groups);
       setItems(extractedItems);
       setColumns(extractedColumns);
       selection.setItems(extractedItems, true);
     }
   }, [dataset, level1, level2, level3, groups]);
 
-  useEffect(() => {
-    // If necessary, use this for the selectedRecordIds.
-    const selectedRecordIds = selectedItems.map(
-      (item) => item.ct_bwprocessitemguid as string
-    );
+  useEffect(() => { //Ne znam da li je potrebno, u principu i nije, al nek stoji za dalju upotrebu
+    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
     dataset.setSelectedRecordIds(selectedRecordIds);
   }, [selection, dataset]);
+  
 
   const openRecordForm = (item: DynamicItem) => {
     context.navigation.openForm({
-      entityName: "ct_bw_procesitems", // Entity on which it is called
-      entityId: item.ct_bwprocessitemguid as string,
+      entityName: "ct_bw_procesitems", //Entity on which is called
+      entityId: item.ct_bwprocessitemguid as string
     });
   };
 
-  const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const onRenderCell = (nestingDepth?: number, item?: DynamicItem, itemIndex?: number, group?: IGroup): React.ReactNode => {
+    //console.log("Selected items: ", selectedItems);
 
-  const handleCheckboxChange = async (item: DynamicItem) => {
-    const processItemId = item.ct_bwprocessitemguid as string;
-    const projectID = context.parameters.ct_projectid.raw;
+    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
+    dataset.setSelectedRecordIds(selectedRecordIds);
+    //console.log("IDs: ", selectedRecordIds);
 
-    if (!projectID || !processItemId) {
-      console.error("Project ID or Process Item ID is missing.");
-      return;
-    }
+    //console.log("Dataset: ", dataset.getSelectedRecordIds());
 
-    try {
-      await context.webAPI.createRecord("ct_bw_projectprocess", {
-        ct_bwproject: projectID, // Lookup to Project
-        ct_bwprocessitem: processItemId, // Lookup to Process Item
-      });
-
-      // Update state to reflect checked status
-      setItems((prevItems) =>
-        prevItems.map((i) =>
-          i.ct_bwprocessitemguid === processItemId
-            ? { ...i, isChecked: true }
-            : i
-        )
-      );
-    } catch (error) {
-      console.error("Error creating Project Process record:", error);
-    }
-  };
-
-  const onRenderCell = (
-    nestingDepth?: number,
-    item?: DynamicItem,
-    itemIndex?: number,
-    group?: IGroup
-  ): React.ReactNode => {
     return item && typeof itemIndex === "number" && itemIndex > -1 ? (
-      <div onDoubleClick={() => openRecordForm(item)} className="row-container">
+      <div onDoubleClick={() => openRecordForm(item)}>
         <DetailsRow
           columns={columns}
           groupNestingDepth={nestingDepth}
@@ -343,13 +269,16 @@ export const GBCheckBox = ({
               ))}
             </div>
           </div>
-          <GroupedList
-            items={items}
-            onRenderCell={onRenderCell}
-            selectionMode={SelectionMode.none}
-            groups={groups}
-            className="ms-GroupedList"
-          />
+          <SelectionZone selection={selection} selectionMode={SelectionMode.multiple}>
+            <GroupedList
+              items={items}
+              onRenderCell={onRenderCell}
+              selection={selection}
+              selectionMode={SelectionMode.multiple}
+              groups={groups}
+              className="ms-GroupedList"
+            />
+          </SelectionZone>
         </div>
       )}
     </div>
