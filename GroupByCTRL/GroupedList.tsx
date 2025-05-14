@@ -14,6 +14,7 @@ export type Dataset = ComponentFramework.PropertyTypes.DataSet;
 export interface IGroupedList {
   dataset: Dataset;
   context: ComponentFramework.Context<IInputs>;
+
 }
 
 interface GroupedRecord {
@@ -244,9 +245,9 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
   };
 
   return (
-    <div className="container">
+    <div className="GroupByCTRL-container" data-control-id="GroupByCTRL">
       {screen ? (
-        <div className="selected-items-container">
+        <div className="GroupByCTRL-selected-items-container">
           <h2>Selected Items</h2>
           {selectedItems.length > 0 ? (
             selectedItems.map((item) => (
@@ -258,12 +259,12 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
           <button onClick={() => setScreen(false)}>Back</button>
         </div>
       ) : (
-        <div className="grouped-list-container">
-          <div className="header-div">
-            <div className="columnSpacer"></div>
-            <div className="header-columns">
+        <div className="GroupByCTRL-grouped-list-container">
+          <div className="GroupByCTRL-header-div">
+            <div className="GroupByCTRL-columnSpacer"></div>
+            <div className="GroupByCTRL-header-columns">
               {columns.map((column) => (
-                <div key={column.key} className="header-column">
+                <div key={column.key} className="GroupByCTRL-header-column">
                   {column.name}
                 </div>
               ))}

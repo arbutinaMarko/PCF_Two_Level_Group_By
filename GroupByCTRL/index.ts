@@ -1,5 +1,5 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { GBCheckBox, IGroupedList } from "./GroupedList";
+import { GroupedListComp, IGroupedList } from "./GroupedList";
 //import { GroupedListComp } from "./TestComp";
 import * as React from "react";
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
@@ -39,13 +39,11 @@ export class GroupByCTRL
   public updateView(
     context: ComponentFramework.Context<IInputs>
   ): React.ReactElement {
-    const projectId = context.parameters.ct_projectid.raw ?? ""; 
     const props: IGroupedList = {
       dataset: context.parameters.dataset,
-      context: context,
-      projectID: projectId,
+      context: context
     };
-    return React.createElement(GBCheckBox, props);
+    return React.createElement(GroupedListComp, props);
     //return React.createElement(GroupedListComp);
   }
 
