@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { GroupedList, IGroup } from "@fluentui/react/lib/GroupedList";
-import { IColumn, DetailsRow, DetailsRowFields } from "@fluentui/react/lib/DetailsList";
+import {
+  IColumn,
+  DetailsRow,
+  DetailsHeader,
+} from "@fluentui/react/lib/DetailsList";
 import {
   Selection,
   SelectionMode,
@@ -11,22 +15,15 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { useConst } from "@fluentui/react-hooks";
 
 export type Dataset = ComponentFramework.PropertyTypes.DataSet;
-export interface IGroupedList {
+export interface IGroupedListProps {
   dataset: Dataset;
-  context: ComponentFramework.Context<IInputs>;
-
-}
-
-interface GroupedRecord {
-  [key: string]: {
-    [key: string]: Array<{ [key: string]: string }>;
-  };
+  entityName: string;
 }
 
 export interface DynamicItem {
   [key: string]: string | number | boolean | undefined;
 }
-
+//#region Making groups
 export function makeGroups(
   dataset: Dataset,
   level1: string,
@@ -35,6 +32,14 @@ export function makeGroups(
   const groups: IGroup[] = [];
   const items: DynamicItem[] = [];
   let startIndex = 0;
+
+  if (
+    !dataset ||
+    !Array.isArray(dataset.sortedRecordIds) ||
+    !dataset.records
+  ) {
+    return { groups, items };
+  }
 
   // Create unique groups for level1
   const uniqueLevel1Values = new Set<string>();
@@ -111,7 +116,8 @@ export function makeGroups(
 
   return { groups, items };
 }
-
+//#endregion
+//#region Making columns and items
 export function makeColumnAndItems(
   dataset: Dataset,
   level1: string,
@@ -121,16 +127,26 @@ export function makeColumnAndItems(
   items: DynamicItem[];
   columns: IColumn[];
 } {
-  
-  const columns: IColumn[] = dataset.columns.filter((column) => column.name !== "ct_name").slice(3).map((column) => ({
-    name: column.displayName,
-    fieldName: column.name,
-    minWidth: column.visualSizeFactor,
-    key: column.name,
-}));
+  const columns: IColumn[] = dataset.columns
+    //.slice(2) // Skip the first two columns (level1 and level2) - Can be deleteted if not needed
+    .map((column) => ({
+      name: column.displayName,
+      fieldName: column.name,
+      minWidth: column.visualSizeFactor,
+      key: column.name,
+    }));
 
   const items: DynamicItem[] = [];
   const groupedRecords: Record<string, Record<string, DynamicItem[]>> = {};
+
+  if (
+    !dataset ||
+    !Array.isArray(dataset.sortedRecordIds) ||
+    !dataset.records ||
+    !Array.isArray(dataset.columns)
+  ) {
+    return { items: [], columns: [] };
+  }
 
   dataset.sortedRecordIds.forEach((id) => {
     const record = dataset.records[id];
@@ -146,6 +162,7 @@ export function makeColumnAndItems(
     }
 
     groupedRecords[level1Value][level2Value].push({
+      id: id,
       ...Object.fromEntries(
         dataset.columns.map((column) => [
           column.name,
@@ -171,18 +188,26 @@ export function makeColumnAndItems(
 
   return { items, columns };
 }
-
-export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: ComponentFramework.Context<IInputs> }): JSX.Element => {
+//#endregion
+//#region Component
+export const GroupedListComp = ({
+  dataset,
+  entityName,
+  context,
+}: IGroupedListProps & {
+  context: ComponentFramework.Context<IInputs>;
+}): JSX.Element => {
   const [groups, setGroups] = useState<IGroup[]>([]);
   const [items, setItems] = useState<DynamicItem[]>([]);
   const [columns, setColumns] = useState<IColumn[]>([]);
-  const [level1, setLevel1] = useState<string>(dataset.columns[0].name);
-  const [level2, setLevel2] = useState<string>(dataset.columns[1].name);
-  const [level3, setLevel3] = useState<string>(dataset.columns[2].name);
+  const [level1, setLevel1] = useState<string>(
+    Array.isArray(dataset.columns) && dataset.columns[0]?.name ? dataset.columns[0].name : ""
+  );
+  const [level2, setLevel2] = useState<string>(
+    Array.isArray(dataset.columns) && dataset.columns[1]?.name ? dataset.columns[1].name : ""
+  );
   const [selectedItems, setSelectedItems] = useState<DynamicItem[]>([]);
-  const [screen, setScreen] = useState<boolean>(false);
 
-  //const selection = useConst(() => new Selection());
   const selection = useConst(
     () =>
       new Selection({
@@ -191,97 +216,77 @@ export const GroupedListComp = ({ dataset, context }: IGroupedList & { context: 
         },
       })
   );
-  
 
   useEffect(() => {
-    const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(dataset, level1 ?? "", level2 ?? "");
+    const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(
+      dataset,
+      level1 ?? "",
+      level2 ?? ""
+    );
     setGroups(generatedGroups);
-  }, [dataset, level1, level2, level3]);
+  }, [dataset, level1, level2]);
 
   useEffect(() => {
     if (groups.length > 0) {
-      const { items: extractedItems, columns: extractedColumns } = makeColumnAndItems(dataset, level1 ?? "", level2 ?? "", groups);
+      const { items: extractedItems, columns: extractedColumns } =
+        makeColumnAndItems(dataset, level1 ?? "", level2 ?? "", groups);
       setItems(extractedItems);
       setColumns(extractedColumns);
       selection.setItems(extractedItems, true);
     }
-  }, [dataset, level1, level2, level3, groups]);
-
-  useEffect(() => { //Ne znam da li je potrebno, u principu i nije, al nek stoji za dalju upotrebu
-    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
-    dataset.setSelectedRecordIds(selectedRecordIds);
-  }, [selection, dataset]);
-  
+  }, [dataset, level1, level2, groups]);
 
   const openRecordForm = (item: DynamicItem) => {
     context.navigation.openForm({
-      entityName: "ct_bw_procesitems", //Entity on which is called
-      entityId: item.ct_bwprocessitemguid as string
+      entityName: entityName,
+      entityId: item.id as string,
     });
   };
-
-  const onRenderCell = (nestingDepth?: number, item?: DynamicItem, itemIndex?: number, group?: IGroup): React.ReactNode => {
-    //console.log("Selected items: ", selectedItems);
-
-    const selectedRecordIds = selectedItems.map((item) => item.ct_bwprocessitemguid as string);
-    dataset.setSelectedRecordIds(selectedRecordIds);
-    //console.log("IDs: ", selectedRecordIds);
-
-    //console.log("Dataset: ", dataset.getSelectedRecordIds());
-
-    return item && typeof itemIndex === "number" && itemIndex > -1 ? (
-      <div onDoubleClick={() => openRecordForm(item)}>
-        <DetailsRow
-          columns={columns}
-          groupNestingDepth={nestingDepth}
-          item={item}
-          itemIndex={itemIndex}
-          selection={selection}
-          selectionMode={SelectionMode.multiple}
-          group={group}
-        />
-      </div>
-    ) : null;
-  };
-
+ //#region Component render
   return (
     <div className="GroupByCTRL-container" data-control-id="GroupByCTRL">
-      {screen ? (
-        <div className="GroupByCTRL-selected-items-container">
-          <h2>Selected Items</h2>
-          {selectedItems.length > 0 ? (
-            selectedItems.map((item) => (
-              <div key={item.ct_name as string | number}>{item.ct_name}</div>
-            ))
-          ) : (
-            <p>No items selected.</p>
-          )}
-          <button onClick={() => setScreen(false)}>Back</button>
-        </div>
-      ) : (
-        <div className="GroupByCTRL-grouped-list-container">
-          <div className="GroupByCTRL-header-div">
-            <div className="GroupByCTRL-columnSpacer"></div>
-            <div className="GroupByCTRL-header-columns">
-              {columns.map((column) => (
-                <div key={column.key} className="GroupByCTRL-header-column">
-                  {column.name}
-                </div>
-              ))}
-            </div>
-          </div>
-          <SelectionZone selection={selection} selectionMode={SelectionMode.multiple}>
-            <GroupedList
-              items={items}
-              onRenderCell={onRenderCell}
-              selection={selection}
-              selectionMode={SelectionMode.multiple}
-              groups={groups}
-              className="ms-GroupedList"
-            />
-          </SelectionZone>
-        </div>
-      )}
+      <DetailsHeader
+        columns={columns}
+        selection={selection}
+        selectionMode={SelectionMode.multiple}
+        onColumnClick={() => {}}
+        ariaLabelForSelectAllCheckbox="Toggle selection"
+        ariaLabelForSelectionColumn="Toggle selection"
+        layoutMode={1}
+      />
+      <SelectionZone
+        selection={selection}
+        selectionMode={SelectionMode.multiple}
+      >
+        <GroupedList
+          items={items}
+          onRenderCell={(
+            nestingDepth?: number,
+            item?: DynamicItem,
+            itemIndex?: number,
+            group?: IGroup
+          ) =>
+            item && typeof itemIndex === "number" && itemIndex > -1 ? (
+              <div onDoubleClick={() => openRecordForm(item)}>
+                <DetailsRow
+                  columns={columns}
+                  groupNestingDepth={nestingDepth}
+                  item={item}
+                  itemIndex={itemIndex}
+                  selection={selection}
+                  selectionMode={SelectionMode.multiple}
+                  group={group}
+                />
+              </div>
+            ) : null
+          }
+          selection={selection}
+          selectionMode={SelectionMode.multiple}
+          groups={groups}
+          className="ms-GroupedList"
+        />
+      </SelectionZone>
     </div>
   );
+  //#endregion
 };

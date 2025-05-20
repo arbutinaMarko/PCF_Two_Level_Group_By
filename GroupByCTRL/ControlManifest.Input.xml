@@ -18,7 +18,6 @@
       -->
     </external-service-usage>
     <!-- dataset node represents a set of entity records on CDS; allow more than one datasets -->
-     <property name="ct_projectid" display-name-key="Project ID" description-key="Project ID" of-type="SingleLine.Text" usage="input" required="true" />
     <data-set name="dataset" display-name-key="Dataset_Display_Key">
     <!-- <property-set name="samplePropertySet" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="input" required="true" />
      -->

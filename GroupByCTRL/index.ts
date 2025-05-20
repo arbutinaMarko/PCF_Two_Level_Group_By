@@ -1,7 +1,8 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { GroupedListComp, IGroupedList } from "./GroupedList";
+import { GroupedListComp, IGroupedListProps } from "./GroupedList";
 //import { GroupedListComp } from "./TestComp";
 import * as React from "react";
+import { ClipLoader, PulseLoader } from "react-spinners";
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
 type DataSet = ComponentFramework.PropertyTypes.DataSet;
 
@@ -10,6 +11,11 @@ export class GroupByCTRL
 {
   private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
   private notifyOutputChanged: () => void;
+
+  private _props: IGroupedListProps = {
+    dataset: {} as DataSet,
+    entityName: "",
+  };
 
   /**
    * Empty constructor.
@@ -39,12 +45,51 @@ export class GroupByCTRL
   public updateView(
     context: ComponentFramework.Context<IInputs>
   ): React.ReactElement {
-    const props: IGroupedList = {
-      dataset: context.parameters.dataset,
-      context: context
-    };
-    return React.createElement(GroupedListComp, props);
-    //return React.createElement(GroupedListComp);
+    const dataSet = context.parameters.dataset;
+
+    if (dataSet.loading) {
+      return React.createElement(PulseLoader, {
+        color: "#3363ff",
+        loading: true,
+        cssOverride: {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        },
+        size: 15,
+        margin: 2,
+        speedMultiplier: 0.75,
+      });
+    }
+
+    if (dataSet.paging != null && dataSet.paging.hasNextPage === true) {
+      dataSet.paging.setPageSize(5000);
+      dataSet.paging.loadNextPage();
+      return React.createElement(PulseLoader, {
+        color: "#3363ff",
+        loading: true,
+        cssOverride: {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        },
+        size: 15,
+        margin: 2,
+        speedMultiplier: 0.75,
+      });
+    }
+
+    this._props.dataset = dataSet;
+    this._props.entityName = dataSet.getTargetEntityType();
+
+    return React.createElement(GroupedListComp, {
+      ...this._props,
+      context: context,
+    });
   }
 
   /**

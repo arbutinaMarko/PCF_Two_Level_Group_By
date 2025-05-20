@@ -1,124 +1,104 @@
 .GroupByCTRL-container {
-  display: flex; /* Use flexbox for the layout */
-  height: auto; /* Full height of the viewport */
+  display: flex;
+  flex-direction: column;
   width: 100%;
-}
-
-.GroupByCTRL-controls-container {
-  display: flex;
-  flex-direction: column; /* Stack items vertically */
-  justify-content: flex-start; /* Align items at the start */
-  width: 200px; /* Fixed width for the left pane */
-  padding: 10px; /* Padding */
-  background-color: #f3f2f1; /* Light background */
-}
-
-.GroupByCTRL-grouped-list-container {
-  flex-grow: 1; /* Take up remaining space */
-  padding: 5px; /* Add some padding */
-  overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 100%; /* Prevent exceeding parent height */
-  width: 100%; /* Full width */
-  box-sizing: border-box; /* Include padding in width calculation */
-}
-
-.GroupByCTRL-header-div {
-  margin-bottom: 8px;
-  display: flex;
-  flex-direction: row;}
-
-.GroupByCTRL-header-columns {
-  display: flex; /* Flexbox for horizontal layout */
-  width: 100%; /* Ensure full width */
-}
-
-.GroupByCTRL-columnSpacer {
-  width: 152px;
-  flex: inherit;
-  font-weight: bold;
-  padding: 0px;
-  text-align: center;
-  border-bottom: 2px solid #e0e0e0;
-  font-size: 12px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.GroupByCTRL-header-column:first-child{
+  height: 100%;
+  overflow-y: auto;
+  background: #f8fafc00;
+  font-family: Segoe UI, Arial, sans-serif;
+  font-size: 10px;
+  box-sizing: border-box;
   padding-left: 10px;
 }
 
-.GroupByCTRL-header-column {
-  text-align: start;
-  flex: 1;
-  font-weight: bold;
-  padding: 8px;
-  text-align: left;
-  border-bottom: 2px solid #e0e0e0;
-  font-size: 15px;
+[data-control-id="GroupByCTRL"] .ms-GroupSpacer {
+  max-width: 15px;
+}
+
+[data-control-id="GroupByCTRL"] .ms-DetailsRow-cellCheck,
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cellIsCheck {
+  flex: 0 0 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  padding: 0px !important;
+  display: flex;
+}
+
+/* Header row */
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader {
+  display: flex;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 2;
+  border-bottom: 1px solid #e1e1e1;
+  width: 100%;
+  min-height: 44px;
+}
+
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cellName {
+  padding-left: 15px;
+}
+
+/* Header cells */
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cell,
+[data-control-id="GroupByCTRL"] .ms-DetailsRow-cell {
+  flex: 0 0 250px;
+  min-width: 250px;
+  max-width: 250px;
+  box-sizing: border-box;
+  padding-left: 12px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-[data-control-id="GroupByCTRL"] .ms-GroupedList {
-  width: 100%; /* Ensure the grouped list takes full width */
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cell:last-child,
+[data-control-id="GroupByCTRL"] .ms-DetailsRow-cell:last-child {
+  border-right: none;
 }
 
-[data-control-id="GroupByCTRL"] .ms-List-page {
-  width: 100%; /* Ensure the list page takes the full width */
-  display: flex;
-  flex-direction: column; /* Stack the cells vertically */
-  padding: 0; /* Remove padding */
+/* Group header */
+[data-control-id="GroupByCTRL"] .ms-GroupHeader {
+  background: #f9f9f9;
+  border-bottom: 1px solid #e1e1e1;
+  position: sticky;
+  top: 44px;
+  z-index: 1;
+  font-size: 15px;
 }
 
-[data-control-id="GroupByCTRL"] .ms-List-cell {
-  width: 100%; /* Each cell should take the full width */
-  justify-content: space-between; /* Space the cells evenly */
-  align-items: center; /* Align items vertically */
+[data-control-id="GroupByCTRL"] .ms-GroupHeader-title {
+  color: #333;
+  font-weight: 600;
 }
 
+/* Data rows */
 [data-control-id="GroupByCTRL"] .ms-DetailsRow {
-  width: 100%; /* Ensure each details row takes the full width */
-}
-
-[data-control-id="GroupByCTRL"] .ms-DetailsRow-fields {
-  display: flex; /* Use flexbox to arrange fields */
-  justify-content: space-between; /* Distribute space evenly */
-  width: 100%; /* Ensure it takes full width */
+  background-color: #fff;
+  border-bottom: 1px solid #e1e1e1;
+  min-height: 44px;
+  display: flex;
   align-items: center;
 }
 
-[data-control-id="GroupByCTRL"] .ms-DetailsRow-cell {
-  flex: 1; /* Allow each cell to grow equally */
-  text-align: left; /* Align text to the left */
-  padding: 8px; /* Add some padding for better spacing */
-  overflow: visible;
-  white-space: normal;
+[data-control-id="GroupByCTRL"] .ms-DetailsRow:hover {
+  background-color: #f8f8f8;
 }
 
-[data-control-id="GroupByCTRL"] .GroupByCTRL-dropdown {
-  margin-bottom: 5px; /* Space between dropdowns */
-  padding: 5px; /* Padding for dropdown */
-  font-size: 14px; /* Font size for dropdown */
-  width: -webkit-fill-available;
+[data-control-id="GroupByCTRL"] .ms-DetailsRow-cell:hover {
+  background-color: #e8e7e7;
 }
 
-[data-control-id="GroupByCTRL"] .GroupByCTRL-action-button {
-  padding: 10px; /* Padding for button */
-  background-color: #0078d4; /* Fluent UI primary color */
-  color: white; /* Text color */
-  border: none; /* Remove default border */
-  border-radius: 4px; /* Rounded corners */
-  cursor: pointer; /* Pointer on hover */
-  font-size: 14px; /* Font size for button */
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cell:hover {
+  border: 2px solid #7083c2;
 }
 
-[data-control-id="GroupByCTRL"] .GroupByCTRL-action-button:hover {
-  background-color: #005a9e; /* Darker shade on hover */
-}
-
-[data-control-id="GroupByCTRL"] .GroupByCTRL-ms-GroupHeader {
-  font-size: 12px;
+[data-control-id="GroupByCTRL"] .ms-DetailsRow.is-selected {
+  background-color: #eff3ff !important;
 }
