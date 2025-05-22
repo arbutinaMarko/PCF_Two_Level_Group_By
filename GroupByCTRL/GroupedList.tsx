@@ -15,14 +15,29 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { useConst } from "@fluentui/react-hooks";
 
 export type Dataset = ComponentFramework.PropertyTypes.DataSet;
+
 export interface IGroupedListProps {
   dataset: Dataset;
   entityName: string;
 }
 
+export type ILookupValue = ComponentFramework.LookupValue;
+export type IEntityReference = ComponentFramework.EntityReference;
+
 export interface DynamicItem {
-  [key: string]: string | number | boolean | undefined;
+  [key: string]:
+    | string
+    | Date
+    | number
+    | number[]
+    | boolean
+    | IEntityReference
+    | IEntityReference[]
+    | ILookupValue
+    | ILookupValue[]
+    | undefined;
 }
+
 //#region Making groups
 export function makeGroups(
   dataset: Dataset,
@@ -33,11 +48,7 @@ export function makeGroups(
   const items: DynamicItem[] = [];
   let startIndex = 0;
 
-  if (
-    !dataset ||
-    !Array.isArray(dataset.sortedRecordIds) ||
-    !dataset.records
-  ) {
+  if (!dataset || !Array.isArray(dataset.sortedRecordIds) || !dataset.records) {
     return { groups, items };
   }
 
@@ -150,8 +161,8 @@ export function makeColumnAndItems(
 
   dataset.sortedRecordIds.forEach((id) => {
     const record = dataset.records[id];
-    const level1Value = record.getFormattedValue(level1) || "";
-    const level2Value = record.getFormattedValue(level2) || "";
+    const level1Value = (level1 && record.getFormattedValue(level1)) || "";
+    const level2Value = (level2 && record.getFormattedValue(level2)) || "";
 
     if (!groupedRecords[level1Value]) {
       groupedRecords[level1Value] = {};
@@ -166,7 +177,7 @@ export function makeColumnAndItems(
       ...Object.fromEntries(
         dataset.columns.map((column) => [
           column.name,
-          record.getFormattedValue(column.name) || "",
+          record.getValue(column.name) || undefined,
         ])
       ),
     });
@@ -201,30 +212,59 @@ export const GroupedListComp = ({
   const [items, setItems] = useState<DynamicItem[]>([]);
   const [columns, setColumns] = useState<IColumn[]>([]);
   const [level1, setLevel1] = useState<string>(
-    Array.isArray(dataset.columns) && dataset.columns[0]?.name ? dataset.columns[0].name : ""
+    Array.isArray(dataset.columns) && dataset.columns[0]?.name
+      ? dataset.columns[0].name
+      : ""
   );
   const [level2, setLevel2] = useState<string>(
-    Array.isArray(dataset.columns) && dataset.columns[1]?.name ? dataset.columns[1].name : ""
+    Array.isArray(dataset.columns) && dataset.columns[1]?.name
+      ? dataset.columns[1].name
+      : ""
   );
-  const [selectedItems, setSelectedItems] = useState<DynamicItem[]>([]);
+
+  const [selectedRecordIds, setSelectedRecordIds] = useState<string[]>([]);
 
   const selection = useConst(
     () =>
       new Selection({
         onSelectionChanged: () => {
-          setSelectedItems(selection.getSelection() as DynamicItem[]);
+          const selected = selection
+            .getSelection()
+            .map((item) => ((item as DynamicItem).id as string) ?? "");
+          setSelectedRecordIds(selected);
         },
       })
   );
 
   useEffect(() => {
+    if (!level1 || !level2) {
+      setGroups([]);
+      setItems([]);
+      setColumns([]);
+      return;
+    }
     const { groups: generatedGroups, items: itemsFromMakeGroup } = makeGroups(
       dataset,
-      level1 ?? "",
-      level2 ?? ""
+      level1,
+      level2
     );
     setGroups(generatedGroups);
   }, [dataset, level1, level2]);
+
+  useEffect(() => {
+    if (Array.isArray(dataset.columns)) {
+      setLevel1(dataset.columns[0]?.name || "");
+      setLevel2(dataset.columns[1]?.name || "");
+    }
+  }, [dataset.columns]);
+
+  useEffect(() => {
+    dataset.setSelectedRecordIds(selectedRecordIds);
+  }, [selectedRecordIds, dataset]);
+
+  useEffect(() => {
+    selection.setItems(items, true);
+  }, [items, selection]);
 
   useEffect(() => {
     if (groups.length > 0) {
@@ -234,7 +274,7 @@ export const GroupedListComp = ({
       setColumns(extractedColumns);
       selection.setItems(extractedItems, true);
     }
-  }, [dataset, level1, level2, groups]);
+  }, [dataset, level1, level2, groups, selection]);
 
   const openRecordForm = (item: DynamicItem) => {
     context.navigation.openForm({
@@ -242,50 +282,86 @@ export const GroupedListComp = ({
       entityId: item.id as string,
     });
   };
- //#region Component render
+
+  //#region Component render
   return (
     <div className="GroupByCTRL-container" data-control-id="GroupByCTRL">
-      <DetailsHeader
-        columns={columns}
-        selection={selection}
-        selectionMode={SelectionMode.multiple}
-        onColumnClick={() => {}}
-        ariaLabelForSelectAllCheckbox="Toggle selection"
-        ariaLabelForSelectionColumn="Toggle selection"
-        layoutMode={1}
-      />
-      <SelectionZone
-        selection={selection}
-        selectionMode={SelectionMode.multiple}
-      >
-        <GroupedList
-          items={items}
-          onRenderCell={(
-            nestingDepth?: number,
-            item?: DynamicItem,
-            itemIndex?: number,
-            group?: IGroup
-          ) =>
-            item && typeof itemIndex === "number" && itemIndex > -1 ? (
-              <div onDoubleClick={() => openRecordForm(item)}>
-                <DetailsRow
-                  columns={columns}
-                  groupNestingDepth={nestingDepth}
-                  item={item}
-                  itemIndex={itemIndex}
-                  selection={selection}
-                  selectionMode={SelectionMode.multiple}
-                  group={group}
-                />
-              </div>
-            ) : null
-          }
-          selection={selection}
-          selectionMode={SelectionMode.multiple}
-          groups={groups}
-          className="ms-GroupedList"
-        />
-      </SelectionZone>
+      {!level1 || !level2 ? (
+        <div style={{ padding: 16, color: "red", textAlign: "center" }}>
+          Please select at least two columns in the view to enable grouping.
+        </div>
+      ) : (
+        <>
+          <DetailsHeader
+            columns={columns}
+            selection={selection}
+            selectionMode={SelectionMode.multiple}
+            onColumnClick={() => {}}
+            ariaLabelForSelectAllCheckbox="Toggle selection"
+            ariaLabelForSelectionColumn="Toggle selection"
+            layoutMode={1}
+          />
+          <SelectionZone
+            selection={selection}
+            selectionMode={SelectionMode.multiple}
+          >
+            <GroupedList
+              items={items}
+              onRenderCell={(
+                nestingDepth?: number,
+                item?: DynamicItem,
+                itemIndex?: number,
+                group?: IGroup
+              ) =>
+                item && typeof itemIndex === "number" && itemIndex > -1 ? (
+                  <div onDoubleClick={() => openRecordForm(item)}>
+                    <DetailsRow
+                      key={item.id as string}
+                      columns={columns.map((col) => ({
+                        ...col,
+                        onRender: (fieldItem: DynamicItem) => {
+                          const value = fieldItem[col.fieldName!];
+                          if (
+                            value &&
+                            typeof value === "object" &&
+                            ("id" in value || "entityType" in value)
+                          ) {
+                            return (
+                              <span
+                                style={{
+                                  cursor: "pointer",
+                                  textDecoration: "underline",
+                                  color: "#0078d4",
+                                }}
+                                onClick={() => openRecordForm(fieldItem)}
+                              >
+                                {("name" in value && value.name) ||
+                                  ("id" in value && value.id) ||
+                                  ""}
+                              </span>
+                            );
+                          }
+                          return <span>{value as string}</span>;
+                        },
+                      }))}
+                      groupNestingDepth={nestingDepth}
+                      item={item}
+                      itemIndex={itemIndex}
+                      selection={selection}
+                      selectionMode={SelectionMode.multiple}
+                      group={group}
+                    />
+                  </div>
+                ) : null
+              }
+              selection={selection}
+              selectionMode={SelectionMode.multiple}
+              groups={groups}
+              className="ms-GroupedList"
+            />
+          </SelectionZone>
+        </>
+      )}
     </div>
   );
   //#endregion

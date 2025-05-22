@@ -1,22 +1,18 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { GroupedListComp, IGroupedListProps } from "./GroupedList";
-//import { GroupedListComp } from "./TestComp";
 import * as React from "react";
-import { ClipLoader, PulseLoader } from "react-spinners";
+import { PulseLoader } from "react-spinners";
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
 type DataSet = ComponentFramework.PropertyTypes.DataSet;
 
 export class GroupByCTRL
   implements ComponentFramework.ReactControl<IInputs, IOutputs>
 {
-  private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
-  private notifyOutputChanged: () => void;
-
+  private notifyOutputChanged: () => void = () => {};
   private _props: IGroupedListProps = {
     dataset: {} as DataSet,
     entityName: "",
   };
-
   /**
    * Empty constructor.
    */
@@ -35,6 +31,9 @@ export class GroupByCTRL
     state: ComponentFramework.Dictionary
   ): void {
     this.notifyOutputChanged = notifyOutputChanged;
+    if (state) {
+      state.dataset = context.parameters.dataset;
+    }
   }
 
   /**
@@ -65,7 +64,7 @@ export class GroupByCTRL
     }
 
     if (dataSet.paging != null && dataSet.paging.hasNextPage === true) {
-      dataSet.paging.setPageSize(5000);
+      dataSet.paging.setPageSize(1000);
       dataSet.paging.loadNextPage();
       return React.createElement(PulseLoader, {
         color: "#3363ff",

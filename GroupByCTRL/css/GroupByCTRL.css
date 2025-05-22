@@ -1,14 +1,16 @@
 .GroupByCTRL-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 100vw;
   height: 100%;
   overflow-y: auto;
+  overflow-x:hidden;
   background: #f8fafc00;
   font-family: Segoe UI, Arial, sans-serif;
   font-size: 10px;
   box-sizing: border-box;
   padding-left: 10px;
+  z-index: 0;
 }
 
 [data-control-id="GroupByCTRL"] .ms-GroupSpacer {
