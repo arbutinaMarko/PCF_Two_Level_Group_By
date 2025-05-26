@@ -9,10 +9,7 @@ export class GroupByCTRL
   implements ComponentFramework.ReactControl<IInputs, IOutputs>
 {
   private notifyOutputChanged: () => void = () => {};
-  private _props: IGroupedListProps = {
-    dataset: {} as DataSet,
-    entityName: "",
-  };
+  private _currentPage: number;
   /**
    * Empty constructor.
    */
@@ -31,9 +28,9 @@ export class GroupByCTRL
     state: ComponentFramework.Dictionary
   ): void {
     this.notifyOutputChanged = notifyOutputChanged;
-    if (state) {
-      state.dataset = context.parameters.dataset;
-    }
+    // context.parameters.dataset.paging.setPageSize(1000);                             //# If you want to load specific page size, uncomment this 2 lines
+    this._currentPage = context.parameters.dataset.paging.firstPageNumber;              //# Without this data will be loaded per user settings 50-250 records
+    // context.parameters.dataset.paging.loadExactPage(this._currentPage);              //# This i only way to override that oob setting (without retrieveMultipleRecords)
   }
 
   /**
@@ -44,51 +41,32 @@ export class GroupByCTRL
   public updateView(
     context: ComponentFramework.Context<IInputs>
   ): React.ReactElement {
-    const dataSet = context.parameters.dataset;
-
-    if (dataSet.loading) {
-      return React.createElement(PulseLoader, {
-        color: "#3363ff",
-        loading: true,
-        cssOverride: {
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          height: "100%",
-        },
-        size: 15,
-        margin: 2,
-        speedMultiplier: 0.75,
-      });
+    console.log("Current page:", this._currentPage);
+    
+    if(context.parameters.dataset.loading) {
+      return this._createLoader();
     }
 
-    if (dataSet.paging != null && dataSet.paging.hasNextPage === true) {
-      dataSet.paging.setPageSize(1000);
-      dataSet.paging.loadNextPage();
-      return React.createElement(PulseLoader, {
-        color: "#3363ff",
-        loading: true,
-        cssOverride: {
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          height: "100%",
-        },
-        size: 15,
-        margin: 2,
-        speedMultiplier: 0.75,
-      });
-    }
-
-    this._props.dataset = dataSet;
-    this._props.entityName = dataSet.getTargetEntityType();
-
-    return React.createElement(GroupedListComp, {
-      ...this._props,
+    //context.parameters.dataset.paging.setPageSize(1000);
+    const props : IGroupedListProps = {
+      dataset: context.parameters.dataset,
+      entityName: context.parameters.dataset.getTargetEntityType(),
       context: context,
-    });
+      currentPage: this._currentPage,
+      loadPrevPage: () => this.laodPrevPage(context.parameters.dataset),
+      loadNextPage: () => this.loadNextPage(context.parameters.dataset),
+    }
+    console.log("Update view dataset", context.parameters.dataset);
+    try {
+      return React.createElement(GroupedListComp, props);
+    } catch (e) {
+      console.error("Error rendering GroupedListComp:", e);
+      return React.createElement(
+        "div",
+        null,
+        "An error occurred loading the data."
+      );
+    }
   }
 
   /**
@@ -106,4 +84,36 @@ export class GroupByCTRL
   public destroy(): void {
     // Add code to cleanup control if necessary
   }
+
+  private _createLoader(): React.ReactElement {
+    return React.createElement(PulseLoader, {
+      color: "#3363ff",
+      loading: true,
+      cssOverride: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
+      },
+      size: 15,
+      margin: 2,
+      speedMultiplier: 0.75,
+    });
+  }
+
+  private laodPrevPage(dataset: DataSet): void {
+    if(dataset.paging.hasPreviousPage) {
+      this._currentPage -= 1;
+      dataset.paging.loadExactPage(this._currentPage);
+    }
+  }
+
+  private loadNextPage(dataset: DataSet): void {
+    if(dataset.paging.hasNextPage) {
+      this._currentPage += 1;
+      dataset.paging.loadExactPage(this._currentPage);
+    }
+  }
+
 }

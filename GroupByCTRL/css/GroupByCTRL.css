@@ -36,6 +36,7 @@
   border-bottom: 1px solid #e1e1e1;
   width: 100%;
   min-height: 44px;
+  padding-top: 0px;
 }
 
 [data-control-id="GroupByCTRL"] .ms-DetailsHeader-cellName {
@@ -103,4 +104,55 @@
 
 [data-control-id="GroupByCTRL"] .ms-DetailsRow.is-selected {
   background-color: #eff3ff !important;
+}
+
+.groupby-footer-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  background: #fff;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  min-height: 48px;
+  z-index: 10;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+
+.groupby-footer-bar .footer-info {
+  color: #444;
+  font-size: 14px;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.pagination-btn {
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.2s, background 0.2s;
+  cursor: pointer;
+  outline: none;
+  font-size: 20px;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f3f9fd;
+  box-shadow: 0 4px 16px rgba(0,120,212,0.12);
 }

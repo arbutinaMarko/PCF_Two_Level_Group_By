@@ -19,6 +19,10 @@ export type Dataset = ComponentFramework.PropertyTypes.DataSet;
 export interface IGroupedListProps {
   dataset: Dataset;
   entityName: string;
+  context: ComponentFramework.Context<IInputs>;
+  currentPage: number;
+  loadPrevPage: () => void;
+  loadNextPage: () => void;
 }
 
 export type ILookupValue = ComponentFramework.LookupValue;
@@ -205,6 +209,9 @@ export const GroupedListComp = ({
   dataset,
   entityName,
   context,
+  currentPage,
+  loadPrevPage,
+  loadNextPage,
 }: IGroupedListProps & {
   context: ComponentFramework.Context<IInputs>;
 }): JSX.Element => {
@@ -272,9 +279,8 @@ export const GroupedListComp = ({
         makeColumnAndItems(dataset, level1 ?? "", level2 ?? "", groups);
       setItems(extractedItems);
       setColumns(extractedColumns);
-      selection.setItems(extractedItems, true);
     }
-  }, [dataset, level1, level2, groups, selection]);
+  }, [dataset, level1, level2, groups]);
 
   const openRecordForm = (item: DynamicItem) => {
     context.navigation.openForm({
@@ -360,6 +366,48 @@ export const GroupedListComp = ({
               className="ms-GroupedList"
             />
           </SelectionZone>
+          {/* Footer */}
+          <div className="groupby-footer-bar">
+            <div className="footer-info">
+              {(() => {
+                return `Page: ${currentPage} | Rows showing: ${dataset.sortedRecordIds.length}`;
+              })()}
+            </div>
+            <div className="pagination-buttons">
+              <button
+                className="pagination-btn"
+                onClick={loadPrevPage}
+                aria-label="Previous page"
+                disabled={!dataset.paging.hasPreviousPage}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M13 15L8 10L13 5"
+                    stroke="#0078d4"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                className="pagination-btn"
+                onClick={loadNextPage}
+                aria-label="Next page"
+                disabled={!dataset.paging.hasNextPage}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M7 5L12 10L7 15"
+                    stroke="#0078d4"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </>
       )}
     </div>
