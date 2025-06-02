@@ -13,7 +13,7 @@
   z-index: 0;
 }
 
-[data-control-id="GroupByCTRL"] .ms-GroupSpacer {
+[data-control-id="GroupByCTRL"] .ms-GroupSpacer{
   max-width: 15px;
 }
 
@@ -24,6 +24,10 @@
   max-width: 48px !important;
   padding: 0px !important;
   display: flex;
+}
+
+[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cellIsCheck {
+  margin-right: 15px;
 }
 
 /* Header row */
@@ -37,10 +41,6 @@
   width: 100%;
   min-height: 44px;
   padding-top: 0px;
-}
-
-[data-control-id="GroupByCTRL"] .ms-DetailsHeader-cellName {
-  padding-left: 15px;
 }
 
 /* Header cells */
