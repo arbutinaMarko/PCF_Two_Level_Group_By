@@ -1,16 +1,23 @@
 .GroupByCTRL-container {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x:hidden;
   background: #f8fafc00;
   font-family: Segoe UI, Arial, sans-serif;
   font-size: 10px;
   box-sizing: border-box;
-  padding-left: 10px;
   z-index: 0;
+}
+
+[data-control-id="GroupByCTRL"] .data-scrollable{
+  flex: 1;
+  overflow: auto;
+}
+
+[data-control-id="GroupByCTRL"] .ms-List {
+  width: fit-content;
+  min-width: 100%;
 }
 
 [data-control-id="GroupByCTRL"] .ms-GroupSpacer{
@@ -38,7 +45,8 @@
   background: #ffffff;
   z-index: 2;
   border-bottom: 1px solid #e1e1e1;
-  width: 100%;
+  width: fit-content;
+  min-width: 100%;
   min-height: 44px;
   padding-top: 0px;
 }
@@ -46,9 +54,7 @@
 /* Header cells */
 [data-control-id="GroupByCTRL"] .ms-DetailsHeader-cell,
 [data-control-id="GroupByCTRL"] .ms-DetailsRow-cell {
-  flex: 0 0 250px;
-  min-width: 250px;
-  max-width: 250px;
+  flex: 1;
   box-sizing: border-box;
   padding-left: 12px;
   border: none;
@@ -59,6 +65,14 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.ms-DetailsRow-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  background-color: white; /* ili tvoja default boja */
+  border-bottom: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
 }
 
 [data-control-id="GroupByCTRL"] .ms-DetailsHeader-cell:last-child,
@@ -74,6 +88,8 @@
   top: 44px;
   z-index: 1;
   font-size: 15px;
+  width: fit-content;
+  min-width: 100%;
 }
 
 [data-control-id="GroupByCTRL"] .ms-GroupHeader-title {
@@ -88,6 +104,12 @@
   min-height: 44px;
   display: flex;
   align-items: center;
+  min-width: 100% !important;
+  width: fit-content;
+}
+
+[data-control-id="GroupByCTRL"] .ms-DetailsRow-fields {
+  width: 100%
 }
 
 [data-control-id="GroupByCTRL"] .ms-DetailsRow:hover {
@@ -119,6 +141,7 @@
   min-height: 48px;
   z-index: 10;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
 }
 
 .groupby-footer-bar .footer-info {
@@ -156,3 +179,4 @@
   background: #f3f9fd;
   box-shadow: 0 4px 16px rgba(0,120,212,0.12);
 }
+

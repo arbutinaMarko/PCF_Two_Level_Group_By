@@ -292,6 +292,7 @@ export const GroupedListComp = ({
   //#region Component render
   return (
     <div className="GroupByCTRL-container" data-control-id="GroupByCTRL">
+      <div className="data-scrollable">
       {!level1 || !level2 ? (
         <div style={{ padding: 16, color: "red", textAlign: "center" }}>
           Please select at least two columns in the view to enable grouping.
@@ -366,7 +367,11 @@ export const GroupedListComp = ({
               className="ms-GroupedList"
             />
           </SelectionZone>
-          {/* Footer */}
+         
+        </>
+      )}
+      </div>
+       {/* Footer */}
           <div className="groupby-footer-bar">
             <div className="footer-info">
               {(() => {
@@ -408,8 +413,6 @@ export const GroupedListComp = ({
               </button>
             </div>
           </div>
-        </>
-      )}
     </div>
   );
   //#endregion

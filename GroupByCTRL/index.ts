@@ -41,7 +41,6 @@ export class GroupByCTRL
   public updateView(
     context: ComponentFramework.Context<IInputs>
   ): React.ReactElement {
-    console.log("Current page:", this._currentPage);
     
     if(context.parameters.dataset.loading) {
       return this._createLoader();
@@ -56,7 +55,7 @@ export class GroupByCTRL
       loadPrevPage: () => this.laodPrevPage(context.parameters.dataset),
       loadNextPage: () => this.loadNextPage(context.parameters.dataset),
     }
-    console.log("Update view dataset", context.parameters.dataset);
+
     try {
       return React.createElement(GroupedListComp, props);
     } catch (e) {
